@@ -57,12 +57,13 @@ http://localhost:8080/swagger-ui/index.html
 ## Estrutura do projeto
 
 ```
-src/main/java/com/exerciciogpt2/
-├── config/          # Configuração do Swagger/OpenAPI
+src/main/java/com/exerciciogpt3/
+├── config/          # Configuração do Swagger/OpenAPI e abertura automática do navegador
 ├── controller/      # Endpoints REST
-├── dto/             # Objetos de requisição (Request DTOs)
+├── dto/             # Objetos de requisição e resposta (Request/Response DTOs)
 ├── enums/           # Enumerações (TipoDeUsuario)
 ├── exceptions/      # Exceções customizadas e handler global
+├── mapper/          # Conversão entre entidades e DTOs
 ├── model/           # Entidades JPA
 ├── repository/      # Interfaces Spring Data JPA
 └── service/         # Regras de negócio
@@ -74,44 +75,45 @@ src/main/java/com/exerciciogpt2/
 
 ### Usuários `/usuarios`
 
-| Método | Rota           | Descrição                  |
-|--------|----------------|----------------------------|
-| POST   | `/usuarios`    | Cria um novo usuário       |
-| GET    | `/usuarios`    | Lista todos os usuários    |
-| GET    | `/usuarios/{id}` | Busca usuário por ID     |
-| DELETE | `/usuarios/{id}` | Remove um usuário        |
+| Método | Rota               | Descrição                  |
+|--------|--------------------|----------------------------|
+| POST   | `/usuarios`        | Cria um novo usuário       |
+| GET    | `/usuarios`        | Lista todos os usuários    |
+| GET    | `/usuarios/{id}`   | Busca usuário por ID       |
+| DELETE | `/usuarios/{id}`   | Remove um usuário          |
 
 **Corpo da requisição (POST):**
 ```json
 {
   "nome": "João Silva",
   "email": "joao@email.com",
-  "tipo": "Mentor"
+  "tipo": "MENTOR"
 }
 ```
 
-> `tipo` aceita os valores: `Mentor` ou `Aluno`
+> `tipo` aceita os valores: `MENTOR` ou `ALUNO`
 
 ---
 
 ### Mentorias `/mentorias`
 
-| Método | Rota               | Descrição                          |
-|--------|--------------------|------------------------------------|
-| POST   | `/mentorias`       | Cria uma nova mentoria             |
-| GET    | `/mentorias`       | Lista todas as mentorias           |
-| GET    | `/mentorias?nome={nome}` | Filtra por nome do mentor    |
-| GET    | `/mentorias?especialidade={esp}` | Filtra por especialidade |
-| GET    | `/mentorias?futuras=true` | Lista apenas mentorias futuras |
-| GET    | `/mentorias/{id}`  | Busca mentoria por ID              |
-| DELETE | `/mentorias/{id}`  | Remove uma mentoria                |
+| Método | Rota                             | Descrição                           |
+|--------|----------------------------------|-------------------------------------|
+| POST   | `/mentorias`                     | Cria uma nova mentoria              |
+| GET    | `/mentorias`                     | Lista todas as mentorias            |
+| GET    | `/mentorias?nome={nome}`         | Filtra por nome do mentor           |
+| GET    | `/mentorias?especialidade={esp}` | Filtra por especialidade            |
+| GET    | `/mentorias?futuras=true`        | Lista apenas mentorias futuras      |
+| GET    | `/mentorias?futuras=false`       | Lista apenas mentorias passadas     |
+| GET    | `/mentorias/{id}`                | Busca mentoria por ID               |
+| DELETE | `/mentorias/{id}`                | Remove uma mentoria                 |
 
 **Corpo da requisição (POST):**
 ```json
 {
   "titulo": "Introdução ao Java",
   "especialidade": "Backend",
-  "data": "2026-06-15T10:00:00",
+  "dataHora": "2026-06-15T10:00:00",
   "mentorId": 1
 }
 ```
@@ -120,8 +122,8 @@ src/main/java/com/exerciciogpt2/
 
 ## Regras de negócio
 
-- E-mails de usuários devem ser únicos — um e-mail já cadastrado retorna erro `400`.
-- Apenas usuários do tipo `Mentor` podem criar mentorias — caso contrário, retorna erro `400`.
+- E-mails de usuários devem ser únicos — um e-mail já cadastrado resultará em erro de constraint no banco de dados.
+- Apenas usuários do tipo `MENTOR` podem criar mentorias — caso contrário, retorna erro `400`.
 - O mentor referenciado em uma mentoria deve existir — caso contrário, retorna `404`.
 - A data da mentoria deve ser uma data futura (validada pela anotação `@Future`).
 
@@ -129,8 +131,8 @@ src/main/java/com/exerciciogpt2/
 
 ## Tratamento de erros
 
-| Exceção                    | Status HTTP | Situação                              |
-|----------------------------|-------------|---------------------------------------|
-| `JaExisteException`        | 400         | E-mail já cadastrado                  |
-| `ApenasMentorException`    | 400         | Usuário não é mentor                  |
-| `MentorNaoEncontradoException` | 404     | Mentor não encontrado pelo ID         |
+| Exceção                          | Status HTTP | Situação                              |
+|----------------------------------|-------------|---------------------------------------|
+| `ApenasMentorException`          | 400         | Usuário não é mentor                  |
+| `MentoriaNaoEncontradaException` | 404         | Mentoria não encontrada pelo ID       |
+| `UsuarioNaoEncontradoException`  | 404         | Usuário/Mentor não encontrado pelo ID |
